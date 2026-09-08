@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  CUSTOMER
+  EMPLOYEE
+  ADMIN
+}
+
+enum EmployeePosition {
+  CUISINIER
+  CAISSIER
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderType {
+  DINE_IN
+  TAKEAWAY
+  DELIVERY
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  UNAVAILABLE
+}
+
+model User {
+  id        Int               @id @default(autoincrement()) @map("id_utilisateur")
+  password  String            @map("mot_de_passe")
+  phone     String?           @map("telephone")
+  createdAt DateTime          @default(now()) @map("date_creation")
+  email     String            @unique
+  firstName String            @map("prenom")
+  lastName  String            @map("nom")
+  role      UserRole          @default(CUSTOMER)
+  position  EmployeePosition? @map("poste")
+
+  orders         Order[]
+  reservations   Reservation[]
+  reviews        Review[]
+  employeeOrders Order[]       @relation("EmployeeOrders")
+  shifts         Shift[]
+
+  @@map("utilisateur")
+}
+
+model Category {
+  id          Int     @id @default(autoincrement()) @map("id_categorie")
+  name        String
+  description String?
+
+  products Product[]
+
+  @@map("categorie")
+}
+
+model Product {
+  id          Int     @id @default(autoincrement()) @map("id_produit")
+  name        String
+  description String?
+  available   Boolean @default(true)
+  price       Decimal @db.Decimal(10, 2)
+  image       String?
+
+  categoryId Int      @map("id_categorie")
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  orderItems OrderItem[]
+  reviews    Review[]
+
+  @@map("produit")
+}
+
+model Order {
+  id        Int         @id @default(autoincrement()) @map("id_commande")
+  orderDate DateTime    @default(now()) @map("date_commande")
+  status    OrderStatus @default(PENDING)
+  type      OrderType
+  total     Decimal     @db.Decimal(10, 2)
+
+  userId Int  @map("id_utilisateur")
+  user   User @relation(fields: [userId], references: [id])
+
+  employeeId Int?  @map("id_employe")
+  employee   User? @relation("EmployeeOrders", fields: [employeeId], references: [id])
+
+  orderItems OrderItem[]
+
+  @@map("commande")
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement()) @map("id_ligne")
+  quantity  Int
+  unitPrice Decimal @map("prix_unitaire") @db.Decimal(10, 2)
+
+  orderId Int   @map("id_commande")
+  order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId Int     @map("id_produit")
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("ligne_commande")
+}
+
+model Reservation {
+  id             Int               @id @default(autoincrement()) @map("id_reservation")
+  date           DateTime
+  time           String
+  numberOfPeople Int               @map("nombres_personnes")
+  status         ReservationStatus @default(PENDING)
+
+  userId Int  @map("id_utilisateur")
+  user   User @relation(fields: [userId], references: [id])
+
+  tableId Int       @map("id_table")
+  table   CafeTable @relation(fields: [tableId], references: [id])
+
+  @@map("reservation")
+}
+
+model CafeTable {
+  id       Int         @id @default(autoincrement()) @map("id_table")
+  number   Int         @unique @map("numero")
+  capacity Int
+  status   TableStatus @default(AVAILABLE)
+
+  reservations Reservation[]
+
+  @@map("table")
+}
+
+model Review {
+  id         Int      @id @default(autoincrement()) @map("id_avis")
+  rating     Int      @map("note")
+  comment    String?
+  reviewDate DateTime @default(now()) @map("date_avis")
+
+  userId Int  @map("id_utilisateur")
+  user   User @relation(fields: [userId], references: [id])
+
+  productId Int?     @map("id_produit")
+  product   Product? @relation(fields: [productId], references: [id])
+
+  @@map("avis")
+}
+
+model Shift {
+  id        Int      @id @default(autoincrement()) @map("id_shift")
+  date      DateTime
+  startTime String   @map("heure_debut")
+  endTime   String   @map("heure_fin")
+
+  employeeId Int  @map("id_utilisateur")
+  employee   User @relation(fields: [employeeId], references: [id])
+
+  @@map("shift")
+}
