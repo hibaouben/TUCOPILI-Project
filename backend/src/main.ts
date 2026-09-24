@@ -25,9 +25,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('TUCOPILI CAFÉ API')
-    .setDescription(
-      'API REST for TUCOPILI CAFÉ management',
-    )
+    .setDescription('API REST for TUCOPILI CAFÉ management')
     .setVersion('1.0')
     .addTag('Categories')
     .addTag('Products')
@@ -41,13 +39,11 @@ async function bootstrap() {
 
   SwaggerModule.setup('docs', app, document);
 
+  const port = process.env.PORT ?? 3000;
 
-  await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
-  console.log('🚀 Starting server...');
+  await app.listen(port, '0.0.0.0');
 
-await app.listen(process.env.PORT ?? 3000, '0.0.0.0');
-
-console.log(`🚀 Server listening on port ${process.env.PORT ?? 3000}`);
+  console.log(`🚀 Server listening on port ${port}`);
 }
 
 bootstrap();
