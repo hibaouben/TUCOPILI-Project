@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -66,18 +66,10 @@ function AdminLayout({
 
   return (
     <div className="admin-layout">
-      {/* =========================================
-          ADMIN NAVIGATION
-          ========================================= */}
-
       <header className="admin-sidebar">
-        {/* LOGO */}
-
         <div className="admin-sidebar-title">
           TUCOPILI
         </div>
-
-        {/* NAVIGATION */}
 
         <nav className="admin-nav">
           {NAV_ITEMS.map((item) => (
@@ -85,20 +77,14 @@ function AdminLayout({
               key={item.key}
               type="button"
               className={`admin-nav-link ${
-                activeTab === item.key
-                  ? "active"
-                  : ""
+                activeTab === item.key ? "active" : ""
               }`}
-              onClick={() =>
-                onTabChange(item.key)
-              }
+              onClick={() => onTabChange(item.key)}
             >
               {item.label}
             </button>
           ))}
         </nav>
-
-        {/* LOGOUT */}
 
         <button
           type="button"
@@ -109,10 +95,6 @@ function AdminLayout({
         </button>
       </header>
 
-      {/* =========================================
-          CONTENT
-          ========================================= */}
-
       <main className="admin-content">
         {children}
       </main>
@@ -121,4 +103,3 @@ function AdminLayout({
 }
 
 export default AdminLayout;
-

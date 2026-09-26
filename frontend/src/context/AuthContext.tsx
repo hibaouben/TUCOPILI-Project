@@ -2,10 +2,10 @@ import {
   createContext,
   useContext,
   useState,
-  ReactNode,
   useEffect,
 } from "react";
 
+import type { ReactNode } from "react";
 import {
   type AuthUser,
   loginUser,

@@ -1,13 +1,39 @@
 import { useEffect, useState } from "react";
-import AdminLayout from "../components/AdminLayout";
-import { getAllOrders, updateOrderStatus, type Order } from "../services/orderService";
+import AdminLayout, {
+  type AdminTab,
+} from "../components/AdminLayout";
+
+import {
+  getAllOrders,
+  updateOrderStatus,
+  type Order,
+} from "../services/orderService";
+
 const COLUMNS = [
-  { key: "PENDING", label: "En attente", statuses: ["PENDING", "CONFIRMED"], next: "PREPARING" },
-  { key: "PREPARING", label: "En préparation", statuses: ["PREPARING"], next: "READY" },
-  { key: "READY", label: "Prêt", statuses: ["READY"], next: "COMPLETED" },
+  {
+    key: "PENDING",
+    label: "En attente",
+    statuses: ["PENDING", "CONFIRMED"],
+    next: "PREPARING",
+  },
+  {
+    key: "PREPARING",
+    label: "En préparation",
+    statuses: ["PREPARING"],
+    next: "READY",
+  },
+  {
+    key: "READY",
+    label: "Prêt",
+    statuses: ["READY"],
+    next: "COMPLETED",
+  },
 ];
 
 function AdminOrders() {
+  const [activeTab, setActiveTab] =
+    useState<AdminTab>("orders");
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,11 +50,16 @@ function AdminOrders() {
 
   useEffect(() => {
     fetchOrders();
+
     const interval = setInterval(fetchOrders, 8000);
+
     return () => clearInterval(interval);
   }, []);
 
-  const handleAdvance = async (orderId: number, nextStatus: string) => {
+  const handleAdvance = async (
+    orderId: number,
+    nextStatus: string
+  ) => {
     try {
       await updateOrderStatus(orderId, nextStatus);
       fetchOrders();
@@ -38,36 +69,62 @@ function AdminOrders() {
   };
 
   const activeOrders = orders.filter((o) =>
-    ["PENDING", "CONFIRMED", "PREPARING", "READY"].includes(o.status)
+    ["PENDING", "CONFIRMED", "PREPARING", "READY"].includes(
+      o.status
+    )
   );
 
   const totalRevenue = orders
     .filter((o) => o.status === "COMPLETED")
-    .reduce((sum, order) => sum + Number(order.total), 0);
+    .reduce(
+      (sum, order) => sum + Number(order.total),
+      0
+    );
 
   if (loading) {
     return (
-      <AdminLayout>
+      <AdminLayout
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      >
         <p>Loading...</p>
       </AdminLayout>
     );
   }
 
   return (
-    <AdminLayout>
+    <AdminLayout
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+    >
       <div className="dashboard-header">
         <h1>Orders — Live Board</h1>
       </div>
 
-      <div className="dashboard-stats" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
+      <div
+        className="dashboard-stats"
+        style={{
+          gridTemplateColumns: "repeat(2, 1fr)",
+        }}
+      >
         <div className="stat-card">
-          <span className="stat-label">Active Orders</span>
-          <strong>{activeOrders.length}</strong>
+          <span className="stat-label">
+            Active Orders
+          </span>
+
+          <strong>
+            {activeOrders.length}
+          </strong>
         </div>
 
         <div className="stat-card">
-          <span className="stat-label">Completed Revenue</span>
-          <strong>{totalRevenue.toFixed(2)} MAD</strong>
+          <span className="stat-label">
+            Completed Revenue
+          </span>
+
+          <strong>
+            {totalRevenue.toFixed(2)} MAD
+          </strong>
         </div>
       </div>
 
@@ -78,39 +135,68 @@ function AdminOrders() {
           );
 
           return (
-            <div className="kanban-column" key={column.key}>
+            <div
+              className="kanban-column"
+              key={column.key}
+            >
               <div className="kanban-column-header">
                 <h3>{column.label}</h3>
-                <span>{columnOrders.length}</span>
+
+                <span>
+                  {columnOrders.length}
+                </span>
               </div>
 
               <div className="kanban-cards">
                 {columnOrders.length === 0 && (
-                  <p className="kanban-empty">Aucune commande</p>
+                  <p className="kanban-empty">
+                    Aucune commande
+                  </p>
                 )}
 
                 {columnOrders.map((order) => (
-                  <div className="kanban-card" key={order.id}>
+                  <div
+                    className="kanban-card"
+                    key={order.id}
+                  >
                     <div className="kanban-card-top">
-                      <strong>#{order.id}</strong>
-                      <span>{Number(order.total).toFixed(2)} MAD</span>
+                      <strong>
+                        #{order.id}
+                      </strong>
+
+                      <span>
+                        {Number(order.total).toFixed(2)} MAD
+                      </span>
                     </div>
 
                     <ul className="kanban-card-items">
-                      {order.orderItems?.map((item) => (
-                        <li key={item.id}>
-                          {item.quantity} × {item.product.name}
-                        </li>
-                      ))}
+                      {order.orderItems?.map(
+                        (item) => (
+                          <li key={item.id}>
+                            {item.quantity} ×{" "}
+                            {item.product.name}
+                          </li>
+                        )
+                      )}
                     </ul>
 
                     <button
                       className="kanban-advance-btn"
-                      onClick={() => handleAdvance(order.id, column.next)}
+                      onClick={() =>
+                        handleAdvance(
+                          order.id,
+                          column.next
+                        )
+                      }
                     >
-                      {column.next === "PREPARING" && "Démarrer la préparation →"}
-                      {column.next === "READY" && "Marquer comme prêt →"}
-                      {column.next === "COMPLETED" && "Marquer comme terminé →"}
+                      {column.next === "PREPARING" &&
+                        "Démarrer la préparation →"}
+
+                      {column.next === "READY" &&
+                        "Marquer comme prêt →"}
+
+                      {column.next === "COMPLETED" &&
+                        "Marquer comme terminé →"}
                     </button>
                   </div>
                 ))}
@@ -124,3 +210,4 @@ function AdminOrders() {
 }
 
 export default AdminOrders;
+

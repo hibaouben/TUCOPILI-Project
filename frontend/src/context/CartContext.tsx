@@ -2,9 +2,9 @@ import {
   createContext,
   useContext,
   useState,
-  ReactNode,
 } from "react";
 
+import type { ReactNode } from "react";
 import { useAuth } from "./AuthContext";
 import { createOrder } from "../services/orderService";
 
